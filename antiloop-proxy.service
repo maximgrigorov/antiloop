@@ -1,0 +1,20 @@
+[Unit]
+Description=antiloop-proxy service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/antiloop
+Environment=PROXY_UPSTREAM=http://127.0.0.1:8080
+Environment=PROXY_HOST=127.0.0.1
+Environment=PROXY_PORT=8081
+Environment=PROXY_MODE=balanced
+ExecStart=%h/antiloop/run.sh
+Restart=on-failure
+RestartSec=3
+StandardOutput=append:%h/antiloop/logs/service.stdout
+StandardError=append:%h/antiloop/logs/service.stderr
+
+[Install]
+WantedBy=default.target
