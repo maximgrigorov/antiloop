@@ -45,19 +45,23 @@ pip install -U pip
 pip install -e .
 ```
 
-### 3. Start the proxy
+### 3. Create your runtime environment file
 
 ```bash
-export PROXY_UPSTREAM=http://127.0.0.1:8080
-export PROXY_MODE=balanced
+cp .env.example .env
+```
+
+`antiloop-proxy` does **not** auto-load `.env`, so load it explicitly before starting:
+
+```bash
+set -a
+source .env
+set +a
 python -m antiloop_proxy
 ```
 
-Or use the helper script:
+Or use the helper script after exporting the same variables in your shell.
 
-```bash
-./run.sh
-```
 
 ## Running next to a local model server
 
@@ -89,17 +93,38 @@ http://127.0.0.1:8081/v1
 
 This project is a good fit when the upstream model is `qwen3-coder-next`, including lower-bit local deployments such as IQ3, and you want an external proxy layer to stabilize tool-calling behavior.
 
-Suggested starting point for this pairing:
+A practical `llama.cpp` pairing looks like this:
 
 ```bash
-export PROXY_UPSTREAM=http://127.0.0.1:8080
-export PROXY_MODE=balanced
-export PROXY_PORT=8081
-export PROXY_MAX_TOKENS_OVERRIDE=32768
-export PROXY_LOOP_MESSAGE_LOOKBACK=10
-export PROXY_LOOP_MIN_TOOL_RESULTS=3
-export PROXY_LOOP_MIN_COMMON_TOKENS=2
+# terminal 1: llama.cpp server with a qwen3-coder-next IQ3 GGUF
+llama-server \
+  --host 127.0.0.1 \
+  --port 8080 \
+  --jinja \
+  --ctx-size 262144 \
+  --parallel 1 \
+  --threads 12 \
+  --flash-attn \
+  --model /models/qwen3-coder-next-iq3.gguf
 ```
+
+Then start the proxy with the bundled example configuration:
+
+```bash
+cp .env.example .env
+set -a
+source .env
+set +a
+python -m antiloop_proxy
+```
+
+Important notes for this pairing:
+
+- start with `PROXY_MODE=balanced`
+- keep `PROXY_FORCE_TOOL_CHOICE_WHEN_TOOL_LAST=true`
+- use `PROXY_MAX_TOKENS_OVERRIDE=32768` as a conservative default unless your client sets `max_tokens`
+- inspect `logs/*.jsonl` before moving to `strict`
+- if your `llama.cpp` build or hardware cannot sustain a very large context, reduce `--ctx-size` first rather than immediately changing proxy policy
 
 Start with `balanced`, inspect logs, and only move to `strict` if the model frequently stops after tool results instead of continuing the chain.
 

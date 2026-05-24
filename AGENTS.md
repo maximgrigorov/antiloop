@@ -52,7 +52,21 @@ pip install -e .
 
 ### 3. Configure runtime settings
 
-Set at least:
+Copy the bundled example file and edit it for the target host:
+
+```bash
+cp .env.example .env
+```
+
+Then load it explicitly before starting the proxy:
+
+```bash
+set -a
+source .env
+set +a
+```
+
+Minimal starting values:
 
 ```bash
 export PROXY_UPSTREAM=http://127.0.0.1:8080
@@ -60,13 +74,14 @@ export PROXY_MODE=balanced
 export PROXY_PORT=8081
 ```
 
-Optional tuning for long-context local models:
+Recommended tuning for `qwen3-coder-next` IQ3 style deployments:
 
 ```bash
 export PROXY_MAX_TOKENS_OVERRIDE=32768
 export PROXY_LOOP_MESSAGE_LOOKBACK=10
 export PROXY_LOOP_MIN_TOOL_RESULTS=3
 export PROXY_LOOP_MIN_COMMON_TOKENS=2
+export PROXY_FORCE_TOOL_CHOICE_WHEN_TOOL_LAST=true
 ```
 
 ### 4. Start the service
