@@ -39,6 +39,8 @@ git clone <repo-url> antiloop
 cd antiloop
 ```
 
+If an autonomous coding agent is doing the deployment, let it work from the repository root so it can read this file before making changes. For Claude Code specifically, keep a `CLAUDE.md` file at the repository root and have the agent follow it together with this `AGENTS.md`.
+
 ### 2. Create the environment and install
 
 ```bash

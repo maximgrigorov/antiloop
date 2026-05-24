@@ -85,6 +85,24 @@ Then point the client application at:
 http://127.0.0.1:8081/v1
 ```
 
+## Recommended pairing: `qwen3-coder-next` (IQ3)
+
+This project is a good fit when the upstream model is `qwen3-coder-next`, including lower-bit local deployments such as IQ3, and you want an external proxy layer to stabilize tool-calling behavior.
+
+Suggested starting point for this pairing:
+
+```bash
+export PROXY_UPSTREAM=http://127.0.0.1:8080
+export PROXY_MODE=balanced
+export PROXY_PORT=8081
+export PROXY_MAX_TOKENS_OVERRIDE=32768
+export PROXY_LOOP_MESSAGE_LOOKBACK=10
+export PROXY_LOOP_MIN_TOOL_RESULTS=3
+export PROXY_LOOP_MIN_COMMON_TOKENS=2
+```
+
+Start with `balanced`, inspect logs, and only move to `strict` if the model frequently stops after tool results instead of continuing the chain.
+
 ## Modes
 
 ### `observe`
