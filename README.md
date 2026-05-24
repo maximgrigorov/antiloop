@@ -128,6 +128,12 @@ Important notes for this pairing:
 
 Start with `balanced`, inspect logs, and only move to `strict` if the model frequently stops after tool results instead of continuing the chain.
 
+The repository also includes ready-to-use deployment artifacts for this pairing:
+
+- `compose.yaml` — Docker Compose example for `llama.cpp` + `antiloop-proxy`
+- `examples/launch-qwen3-coder-next-llamacpp.sh` — sample `llama-server` launch wrapper
+- `antiloop-proxy.envfile.service` — systemd user unit that reads `%h/antiloop/.env`
+
 ## Modes
 
 ### `observe`
@@ -199,9 +205,53 @@ Run the test suite:
 python -m pytest
 ```
 
+## Docker Compose example
+
+A ready example is included as `compose.yaml`.
+
+It runs:
+
+- `llama-server` on port `8080`
+- `antiloop-proxy` on port `8081`
+
+Typical flow:
+
+```bash
+cp .env.example .env
+docker compose up -d
+```
+
+Then point the client at:
+
+```text
+http://127.0.0.1:8081/v1
+```
+
+Adjust the model mount and GGUF filename in `compose.yaml` for your host.
+
+## Sample launch wrapper for llama.cpp
+
+A shell example is included at:
+
+```text
+examples/launch-qwen3-coder-next-llamacpp.sh
+```
+
+Example:
+
+```bash
+chmod +x examples/launch-qwen3-coder-next-llamacpp.sh
+MODEL_PATH=/models/qwen3-coder-next-iq3.gguf examples/launch-qwen3-coder-next-llamacpp.sh
+```
+
 ## systemd user service
 
-A sample user-service unit is included:
+Two sample user-service units are included:
+
+- `antiloop-proxy.service` — inline `Environment=` values
+- `antiloop-proxy.envfile.service` — `EnvironmentFile=%h/antiloop/.env`
+
+### Inline environment variant
 
 ```bash
 mkdir -p ~/.config/systemd/user
@@ -210,6 +260,19 @@ systemctl --user daemon-reload
 systemctl --user enable --now antiloop-proxy.service
 systemctl --user status antiloop-proxy.service
 ```
+
+### `.env` / `EnvironmentFile=` variant
+
+```bash
+cp .env.example .env
+mkdir -p ~/.config/systemd/user
+cp antiloop-proxy.envfile.service ~/.config/systemd/user/antiloop-proxy.service
+systemctl --user daemon-reload
+systemctl --user enable --now antiloop-proxy.service
+systemctl --user status antiloop-proxy.service
+```
+
+This variant is useful when you want systemd to read the same simple `KEY=VALUE` file that you edit manually.
 
 ## When to use this project
 

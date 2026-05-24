@@ -1,0 +1,17 @@
+[Unit]
+Description=antiloop-proxy service (EnvironmentFile variant)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/antiloop
+EnvironmentFile=%h/antiloop/.env
+ExecStart=%h/antiloop/run.sh
+Restart=on-failure
+RestartSec=3
+StandardOutput=append:%h/antiloop/logs/service.stdout
+StandardError=append:%h/antiloop/logs/service.stderr
+
+[Install]
+WantedBy=default.target

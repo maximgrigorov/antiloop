@@ -41,6 +41,12 @@ llama-server \
   --model /models/qwen3-coder-next-iq3.gguf
 ```
 
+A reusable wrapper for this command is included at:
+
+```text
+examples/launch-qwen3-coder-next-llamacpp.sh
+```
+
 Notes for Claude Code:
 
 - keep the upstream endpoint OpenAI-compatible
@@ -78,6 +84,8 @@ Or:
 ```bash
 ./run.sh
 ```
+
+If deployment should be containerized, use the bundled `compose.yaml` as the reference layout. If deployment should be user-level systemd, prefer `antiloop-proxy.envfile.service` when the operator wants `.env` to be the single source of runtime settings.
 
 ## Recommended starting proxy settings
 

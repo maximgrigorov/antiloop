@@ -96,11 +96,20 @@ Or:
 ./run.sh
 ```
 
+For this repository's main target pairing, also see:
+
+- `examples/launch-qwen3-coder-next-llamacpp.sh`
+- `compose.yaml`
+- `antiloop-proxy.envfile.service`
+
 ## systemd user service setup
 
-The provided `antiloop-proxy.service` is written as a **user service** template.
+Two user-service templates are provided:
 
-Install it like this:
+- `antiloop-proxy.service` — inline `Environment=` values
+- `antiloop-proxy.envfile.service` — reads `%h/antiloop/.env` via `EnvironmentFile=`
+
+Inline variant:
 
 ```bash
 mkdir -p ~/.config/systemd/user
@@ -109,11 +118,21 @@ systemctl --user daemon-reload
 systemctl --user enable --now antiloop-proxy.service
 ```
 
+`.env` variant:
+
+```bash
+cp .env.example .env
+mkdir -p ~/.config/systemd/user
+cp antiloop-proxy.envfile.service ~/.config/systemd/user/antiloop-proxy.service
+systemctl --user daemon-reload
+systemctl --user enable --now antiloop-proxy.service
+```
+
 If the repository lives somewhere other than `%h/antiloop`, update:
 
 - `WorkingDirectory=`
 - `ExecStart=`
-- optional `Environment=` values
+- `EnvironmentFile=` or inline `Environment=` values
 
 ## Operator guidance
 

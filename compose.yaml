@@ -1,0 +1,54 @@
+services:
+  llama-server:
+    image: ghcr.io/ggml-org/llama.cpp:server-cuda13
+    container_name: llama-server
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - /data/models/llama:/models:ro
+    command:
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8080"
+      - --jinja
+      - --ctx-size
+      - "262144"
+      - --parallel
+      - "1"
+      - --threads
+      - "12"
+      - --flash-attn
+      - --model
+      - /models/qwen3-coder-next-iq3.gguf
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  antiloop-proxy:
+    image: python:3.11-slim
+    container_name: antiloop-proxy
+    restart: unless-stopped
+    depends_on:
+      - llama-server
+    working_dir: /app
+    env_file:
+      - .env
+    environment:
+      PROXY_UPSTREAM: http://llama-server:8080
+      PROXY_HOST: 0.0.0.0
+      PROXY_PORT: 8081
+      PROXY_LOG_DIR: /app/logs
+    ports:
+      - "8081:8081"
+    volumes:
+      - ./:/app
+    command: >-
+      sh -lc "pip install --no-cache-dir -U pip &&
+      pip install --no-cache-dir -e . &&
+      python -m antiloop_proxy"
